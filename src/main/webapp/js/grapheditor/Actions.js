@@ -399,9 +399,90 @@ Actions.prototype.init = function()
 	}, null, null, 'F2/Enter');
 	this.addAction('editData...', function()
 	{
+
+		alert("editData has been entered entered");
 		var cell = graph.getSelectionCell() || graph.getModel().getRoot();
 		ui.showDataDialog(cell);
 	}, null, null, Editor.ctrlKey + '+M');
+	alert("Adding editObject function");
+	this.addAction('editObject...', function() {
+		alert("editObject has been entered entered");
+		var cell = graph.getSelectionCell() || graph.getModel().getRoot();
+		if (cell != null) {
+			var div = document.createElement('div');
+			div.id = "ObjectDialog";
+			div.style.top = '0px';
+			div.tabindex = '-1';  // Allow the ObjectDialog to get focus
+			var disableEditJson = true;
+			var expandHeight = true;
+			var disableProperties = true;
+			var disableCollapse = true;
+			var formNameRoot = 'xxx';
+			var noAdditionalProperties = true;
+			var theme = "bootstrap4";
+			var iconlib = "fontawesome4";
+			var cellSchema = schemaForCell(cell);
+
+			ObjectDialog = new JSONEditor(div, {
+				disable_edit_json: disableEditJson,
+				expand_height: expandHeight,
+				disable_properties: disableProperties,
+				disable_collapse: disableCollapse,
+				form_name_root: formNameRoot,
+				no_additional_properties: noAdditionalProperties,
+				theme: theme,
+				iconlib: iconlib,
+				schema: cellSchema
+			});
+		}
+		if (cell.data == null) {
+			// No data present
+		} else {
+			// Otherwise instantiate ObjectDialog with the JSON data present in the cell
+			ObjectDialog.setValue(JSON.parse(cell.data));
+		}
+
+		// Add a Cancel Button to the Object Dialog
+
+		cancelButton = document.createElement("input");
+		cancelButton.type = "button";
+		cancelButton.value = "Cancel";
+		cancelButton.className = "btn btn-default btn-sm";
+		cancelButton.id = "cancelButton";
+		cancelButton.style = "top: " + top + 11 + "px; z-index:9990;";
+		div.appendChild(cancelButton);
+		cancelButton.addEventListener('click', function () {
+			ui.hideDialog();
+		}, false);
+
+		var text = document.createTextNode('          ');  // Used for whitespace between the Cancel and Apply button
+		div.appendChild(text);
+
+		// Add a Save Button to the Object Dialog
+		var h = 700; // Height of the dialog)
+		var top = Math.max(0, Math.round((Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - h - ui.footerHeight) / 3));
+		saveButton = document.createElement("input");
+		saveButton.type = "button";
+		saveButton.value = "Apply";
+		saveButton.id = "objectDataSaveButton";
+		saveButton.style = "top: " + top + 16 + "px; z-index:9990;";
+		saveButton.className = "btn btn-primary";
+		div.appendChild(saveButton);
+		div.addEventListener('keydown', function (event) {
+			if (event.ctrlKey && event.which === 83) {
+				event.preventDefault();
+				$('#objectDialogSaveButton').trigger('focus');
+				$('#objectDialogSaveButton').trigger('click');
+			}
+		}, false);
+		saveButton.addEventListener('click', function () {
+			let value = ObjectDialog.getValue();
+			cell.data = JSON.stringify(value);
+			ui.hideDialog();
+		});
+
+		ui.showDialog(div, 700, 700, true, false);
+	}, null, null, 'Alt+Shift+M');
 	this.addAction('editTooltip...', function()
 	{
 		if (graph.isEnabled() && !graph.isSelectionEmpty())
@@ -1594,4 +1675,51 @@ Action.prototype.setSelectedCallback = function(funct)
 Action.prototype.isSelected = function()
 {
 	return this.selectedCallback();
+};
+/**
+ * Returns the object dialog schema for the cell
+ */
+this.schemaForCell = function(cell) {
+	if (cell == null) {
+		return {};
+	}
+	if (cell.style != null && cell.style.startsWith('ellipse')) {
+		return {
+			type: "object",
+			title: 'Ellipse Information',
+			properties: {
+				"Name": {"title": "Name", "type": "string"},
+				"Description": {"title": "Description", "type": "string"},
+				"Author": {"title": "Author", "type": "string"},
+				"Date": {"title": "Date", "type": "string", "format": "date"},
+			}
+		}
+	} else if (cell.style != null && cell.style.startsWith('text')) {
+		return {
+			type: "object",
+			title: 'Text Information',
+			properties: {
+				"Name": {"title": "Name", "type": "string"},
+				"Details": {
+					"type": "string",
+					"format": "bbcode",
+					"options": {
+						"wysiwyg": true
+					}
+				},
+				"Description": {"title": "Description", "type": "string"},
+				"Author": {"title": "Author", "type": "string"},
+				"Date": {"title": "Date", "type": "string", "format": "date"},
+			}
+		}
+	} else {
+		return {
+			type: "object",
+			title: 'No Form Definition Available',
+			properties: {
+				"Message": {"title": "Message", "type": "string","readOnly": true,
+					"default":"No form has been defined for this object."}
+			}
+		}
+	}
 };

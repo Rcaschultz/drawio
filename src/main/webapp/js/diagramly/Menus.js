@@ -3171,7 +3171,7 @@
 				this.addMenuItems(menu, ['copyAsImage']);
 			}
 			
-			this.addMenuItems(menu, ['paste', 'delete', '-', 'duplicate', '-', 'find', '-', 'editData', 'editTooltip', '-',
+			this.addMenuItems(menu, ['paste', 'delete', '-', 'duplicate', '-', 'find', '-', 'editData', 'editObject', 'editTooltip', '-',
 				 'editStyle',  'editGeometry', '-', 'edit', '-', 'editLink', 'openLink', '-',
                  'selectVertices', 'selectEdges', 'selectAll', 'selectNone', '-', 'lockUnlock']);
 		})));

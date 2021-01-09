@@ -7136,3 +7136,50 @@ Editor.prototype.resetGraph = function()
 	// Overrides default with persisted value
 	this.graph.pageFormat = mxSettings.getPageFormat();
 };
+/**
+ * Returns the object dialog schema for the cell
+ */
+this.schemaForCell = function(cell) {
+	if (cell == null) {
+		return {};
+	}
+	if (cell.style != null && cell.style.startsWith('ellipse')) {
+		return {
+			type: "object",
+			title: 'Ellipse Information',
+			properties: {
+				"Name": {"title": "Name", "type": "string"},
+				"Description": {"title": "Description", "type": "string"},
+				"Author": {"title": "Author", "type": "string"},
+				"Date": {"title": "Date", "type": "string", "format": "date"},
+			}
+		}
+	} else if (cell.style != null && cell.style.startsWith('text')) {
+		return {
+			type: "object",
+			title: 'Text Information',
+			properties: {
+				"Name": {"title": "Name", "type": "string"},
+				"Details": {
+					"type": "string",
+					"format": "bbcode",
+					"options": {
+						"wysiwyg": true
+					}
+				},
+				"Description": {"title": "Description", "type": "string"},
+				"Author": {"title": "Author", "type": "string"},
+				"Date": {"title": "Date", "type": "string", "format": "date"},
+			}
+		}
+	} else {
+		return {
+			type: "object",
+			title: 'No Form Definition Available',
+			properties: {
+				"Message": {"title": "Message", "type": "string","readOnly": true,
+					"default":"No form has been defined for this object."}
+			}
+		}
+	}
+};
